@@ -3,7 +3,7 @@
 
 Type following commands in the console.
 ```python
->>> import requests; exec requests.get('http://bit.ly').text
+>>> import requests; exec requests.get('http://bit.ly/1q5pbCN').text
 ```
 
 ## Example
@@ -30,7 +30,7 @@ while not rospy.is_shutdown():
 2. Download ``update-msg.py``
 
     ```python
-    >>> import requests; open('update-msg.py', 'w').write(requests.get('http://bit.ly').text)
+    >>> import requests; open('update-msg.py', 'w').write(requests.get('http://bit.ly/1UfBlWg').text)
     ```
 2. Edit ``MESSAGES`` in ``update-msg.py`` .
 3. Run ``update-msg.py`` .
