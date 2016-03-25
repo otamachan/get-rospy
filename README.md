@@ -3,7 +3,7 @@
 
 Type following commands in the console.
 ```python
->>> import requests; exec requests.get('http://bit.ly/1q5pbCN').text
+>>> import requests; exec requests.get('http://bit.ly/1Rq7Zi1').text
 ```
 
 ## Example
@@ -26,11 +26,10 @@ while not rospy.is_shutdown():
 
 ## Add extra messages
 
-1. Prepare msg and srv files under `site-packages` like `std_msgs`.
-2. Download ``update-msg.py``
+1. Download ``install_msgs.py``
 
     ```python
-    >>> import requests; open('update-msg.py', 'w').write(requests.get('http://bit.ly/1UfBlWg').text)
+    >>> import requests; open('install_msgs.py', 'w').write(requests.get('http://bit.ly/1q5X8mH').text)
     ```
-2. Edit ``MESSAGES`` in ``update-msg.py`` .
-3. Run ``update-msg.py`` .
+2. Edit ``MESSAGES`` in ``install_msgs.py`` .
+3. Run ``install_msgs.py`` .
