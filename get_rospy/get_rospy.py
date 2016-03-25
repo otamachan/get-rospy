@@ -1,31 +1,38 @@
+# -*- codeing: utf-8 -*-
 import glob
 import os
 import sys
 import urllib2
 import zipfile
-PACKAGES = {
-    'catkin': ('ros/catkin', '0.7.1', 'python/catkin', []),
-    'catkin_pkg': ('ros-infrastructure/catkin_pkg', '0.2.10', 'src/catkin_pkg', []),
-    'genmsg': ('ros/genmsg', '0.5.7', 'src/genmsg', []),
-    'genpy': ('ros/genpy', '0.5.8', 'src/genpy', []),
-    'rosgraph': ('ros/ros_comm', '1.12.0', 'tools/rosgraph/src/rosgraph', []),
-    'roslib': ('ros/ros', '1.13.1', 'core/roslib/src/roslib', []),
-    'rospkg': ('ros-infrastructure/rospkg', '1.0.38', 'src/rospkg', []),
-    'rospy': ('ros/ros_comm', '1.12.0', 'clients/rospy/src/rospy', []),
-    'std_msgs': ('ros/std_msgs', '0.5.10', '', ['msg']),
-    'roscpp': ('ros/ros_comm', '1.12.0', 'clients/roscpp', ['msg', 'srv']),
-    'rosgraph_msgs': ('ros/ros_comm_msgs', '1.11.2', 'rosgraph_msgs', ['msg']),
-}
-MESSAGES = [
-    ('std_msgs', []),
-    ('roscpp', []),
-    ('rosgraph_msgs', ['std_msgs']),
+_INSTALL_PACKAGES = [
+    ('otamachan/get-rospy', 'master', 'get_rospy'),
+    ('ros/catkin', '0.7.1', 'python/catkin'),
+    ('ros-infrastructure/catkin_pkg', '0.2.10', 'src/catkin_pkg'),
+    ('ros/genmsg', '0.5.7', 'src/genmsg'),
+    ('ros/genpy', '0.5.8', 'src/genpy'),
+    ('ros/ros_comm', '1.12.0', 'tools/rosgraph/src/rosgraph'),
+    ('ros/ros', '1.13.1', 'core/roslib/src/roslib'),
+    ('ros-infrastructure/rospkg', '1.0.38', 'src/rospkg'),
+    ('ros/ros_comm', '1.12.0', 'clients/rospy/src/rospy'),
 ]
+_INSTALL_MESSAGES = [
+    ('ros/std_msgs', '0.5.10', '', []),
+    ('ros/ros_comm', '1.12.0', 'clients/roscpp', []),
+    ('ros/ros_comm_msgs', '1.11.2', 'rosgraph_msgs', ['std_msgs']),
+]
+
 if os.path.basename(sys.executable) == 'Pythonista':
     DEST_DIR = os.path.join(os.path.expanduser('~'), 'Documents', 'site-packages')
 else:
     DEST_DIR = os.path.join(os.getcwd(), 'site-packages')
 TMP_DIR = os.environ.get('TMPDIR', os.environ.get('TMP', '/tmp'))
+
+
+def get_package(repo, path):
+    if path:
+        return path.rsplit('/', 1)[-1]
+    else:
+        return repo.split('/')[1]
 
 
 def download_from_github(repo, ver):
@@ -44,16 +51,15 @@ def download_from_github(repo, ver):
                         break
                     outs.write(buf)
         except:
-            sys.stderr.write('Download failed!\n')
-            sys.exit(1)
+            raise RuntimeError('Download failed!')
     return zip_file
 
 
-def unzip(zip_file, dest, path, pattern):
-    print "Unzipping into {0} ...".format(dest)
-    full_dest_dir = os.path.join(DEST_DIR, dest)
-    if not os.path.exists(full_dest_dir):
-        os.makedirs(full_dest_dir)
+def unzip(zip_file, package, path, is_msg):
+    print "Unzipping into {0} ...".format(package)
+    package_path = os.path.join(DEST_DIR, package)
+    if not os.path.exists(package_path):
+        os.makedirs(package_path)
     with open(zip_file, 'rb') as ins:
         try:
             zipfp = zipfile.ZipFile(ins)
@@ -63,13 +69,10 @@ def unzip(zip_file, dest, path, pattern):
                     if not name.startswith(path):
                         continue
                     name = name[len(path)+1:]
-                if pattern:
-                    for p in pattern:
-                        if name.startswith(p+'/'):
-                            break
-                    else:
+                if is_msg:
+                    if not (name.startswith('msg/') or name.startswith('srv/')):
                         continue
-                fname = os.path.join(full_dest_dir, name)
+                fname = os.path.join(package_path, name)
                 data = zipfp.read(original_name)
                 if fname.endswith('/'):
                     if not os.path.exists(fname):
@@ -81,8 +84,7 @@ def unzip(zip_file, dest, path, pattern):
                     finally:
                         fp.close()
         except:
-            sys.stderr.write('The zip file is corrupted.\n')
-            sys.exit(1)
+            raise RuntimeError('The zip file is corrupted.')
 
 
 def generate(package, includes):
@@ -107,18 +109,27 @@ def generate(package, includes):
                                         os.path.join(package_path, gentype),
                                         search_path)
             if ret:
-                sys.stderr.write('Failed to generate python files from msg files.\n')
-                sys.exit(1)
+                raise RuntimeError('Failed to generate python files from msg files.')
             genpy.generate_initpy.write_modules(os.path.join(package_path, gentype))
         genpy.generate_initpy.write_modules(os.path.join(package_path))
 
-for package, package_info in PACKAGES.iteritems():
-    repo, ver, path, pattern = package_info
-    zip_file = download_from_github(repo, ver)
-    unzip(zip_file, package, path, pattern)
-if not DEST_DIR in sys.path:
-    sys.path.append(DEST_DIR)
-for package, includes in MESSAGES:
-    generate(package, includes)
 
-print "done"
+def install_messages(messages):
+    for repo, ver, path, includes in messages:
+        if repo:
+            zip_file = download_from_github(repo, ver)
+            unzip(zip_file, get_package(repo, path), path, True)
+        generate(get_package(repo, path), includes)
+
+
+def install():
+    for repo, ver, path in _INSTALL_PACKAGES:
+        zip_file = download_from_github(repo, ver)
+        unzip(zip_file, get_package(repo, path), path, False)
+    if not DEST_DIR in sys.path:
+        sys.path.append(DEST_DIR)
+    install_messages(_INSTALL_MESSAGES)
+    print "done"
+
+
+install()
