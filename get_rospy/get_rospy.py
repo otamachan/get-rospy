@@ -132,4 +132,5 @@ def install():
     print "done"
 
 
-install()
+if __name__ == '__main__':
+    install()
