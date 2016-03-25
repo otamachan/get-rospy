@@ -14,3 +14,4 @@ MESSAGES = [
     ('ros/ros_comm_msgs', '1.11.2', 'rosgraph_msgs', ['std_msgs']),
 ]
 get_rospy.install_messages(MESSAGES)
+print "done"
