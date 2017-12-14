@@ -1,23 +1,27 @@
 # -*- codeing: utf-8 -*-
+from __future__ import print_function
 import glob
 import os
 import sys
-import urllib2
+try:
+    from urllib2 import urlopen
+except:
+    from urllib.request import urlopen
 import zipfile
 _INSTALL_PACKAGES = [
     ('otamachan/get-rospy', 'master', 'get_rospy'),
-    ('ros/catkin', '0.7.1', 'python/catkin'),
-    ('ros-infrastructure/catkin_pkg', '0.2.10', 'src/catkin_pkg'),
-    ('ros/genmsg', '0.5.7', 'src/genmsg'),
-    ('ros/genpy', '0.5.8', 'src/genpy'),
-    ('ros/ros_comm', '1.12.0', 'tools/rosgraph/src/rosgraph'),
-    ('ros/ros', '1.13.1', 'core/roslib/src/roslib'),
-    ('ros-infrastructure/rospkg', '1.0.38', 'src/rospkg'),
-    ('ros/ros_comm', '1.12.0', 'clients/rospy/src/rospy'),
+    ('ros/catkin', '0.7.6', 'python/catkin'),
+    ('ros-infrastructure/catkin_pkg', '0.3.9', 'src/catkin_pkg'),
+    ('ros/genmsg', '0.5.8', 'src/genmsg'),
+    ('ros/genpy', '0.6.5', 'src/genpy'),
+    ('ros/ros_comm', '1.12.7', 'tools/rosgraph/src/rosgraph'),
+    ('ros/ros', '1.13.5', 'core/roslib/src/roslib'),
+    ('ros-infrastructure/rospkg', '1.1.4', 'src/rospkg'),
+    ('ros/ros_comm', '1.12.7', 'clients/rospy/src/rospy'),
 ]
 _INSTALL_MESSAGES = [
-    ('ros/std_msgs', '0.5.10', '', []),
-    ('ros/ros_comm', '1.12.0', 'clients/roscpp', []),
+    ('ros/std_msgs', '0.5.11', '', []),
+    ('ros/ros_comm', '1.12.7', 'clients/roscpp', []),
     ('ros/ros_comm_msgs', '1.11.2', 'rosgraph_msgs', ['std_msgs']),
 ]
 
@@ -40,9 +44,9 @@ def download_from_github(repo, ver):
     fname = '{0}_{1}.zip'.format(repo.split('/')[1], ver)
     zip_file = os.path.join(TMP_DIR, fname)
     if not os.path.exists(zip_file):
-        print "Downloading {0} ...".format(fname)
+        print("Downloading {0} ...".format(fname))
         try:
-            u = urllib2.urlopen(url)
+            u = urlopen(url)
             with open(zip_file, 'wb') as outs:
                 block_sz = 8192
                 while True:
@@ -56,7 +60,7 @@ def download_from_github(repo, ver):
 
 
 def unzip(zip_file, package, path, is_msg):
-    print "Unzipping into {0} ...".format(package)
+    print("Unzipping into {0} ...".format(package))
     package_path = os.path.join(DEST_DIR, package)
     if not os.path.exists(package_path):
         os.makedirs(package_path)
@@ -90,7 +94,7 @@ def unzip(zip_file, package, path, is_msg):
 def generate(package, includes):
     import genpy.genpy_main
     import genpy.generator
-    print "Generating {0} ...".format(package)
+    print("Generating {0} ...".format(package))
     package_path = os.path.join(DEST_DIR, package)
     for gentype in ('msg', 'srv'):
         files = glob.glob(os.path.join(package_path, gentype,
@@ -129,7 +133,7 @@ def install():
     if not DEST_DIR in sys.path:
         sys.path.append(DEST_DIR)
     install_messages(_INSTALL_MESSAGES)
-    print "done"
+    print("done")
 
 
 if __name__ == '__main__':
