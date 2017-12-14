@@ -3,7 +3,7 @@
 
 Type following commands in the console.
 ```python
->>> import requests; exec requests.get('http://bit.ly/1Rq7Zi1').text
+>>> import requests as r; exec(r.get('http://bit.ly/1Rq7Zi1').text)
 ```
 
 ## Example
@@ -12,6 +12,7 @@ Here is a very simple rospy example.
 ```python
 import os
 import rospy
+import std_msgs.msg
 os.environ['ROS_MASTER_URI'] = 'http://192.169.x.x:11311'
 os.environ['ROS_IP'] = '192.168.y.y'
 os.environ['ROS_PYTHON_LOG_CONFIG_FILE'] = '' # without this, init_node will fail
@@ -29,7 +30,7 @@ while not rospy.is_shutdown():
 1. Download ``install_msgs.py``
 
     ```python
-    >>> import requests; open('install_msgs.py', 'w').write(requests.get('http://bit.ly/1q5X8mH').text)
+    >>> import requests as r; open('install_msgs.py', 'w').write(r.get('http://bit.ly/1q5X8mH').text)
     ```
 2. Edit ``MESSAGES`` in ``install_msgs.py`` .
 3. Run ``install_msgs.py`` .
